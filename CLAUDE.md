@@ -1,187 +1,98 @@
 # Job Scraper
 
-A full-stack job scraping platform with a React dashboard and Python scraper pipeline that aggregates job postings from various company career pages.
+Full-stack job scraping platform: React dashboard + Python scraper pipeline.
 
-## Architecture Overview
+## Quick Links
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                        │
-│  src/                                                           │
-│  ├── components/ui/       # shadcn/ui components                │
-│  ├── components/scraper/  # Dashboard components                │
-│  ├── lib/supabase.ts      # Supabase client                     │
-│  └── types/               # TypeScript types                    │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Supabase (Backend)                         │
-│  - PostgreSQL database                                          │
-│  - Real-time subscriptions                                      │
-│  - Row-level security                                           │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Python Scraper (jobscraper/)                 │
-│  ├── extractors/    # ATS-specific parsers                      │
-│  ├── collectors/    # HTTP/Playwright fetchers                  │
-│  ├── pipelines/     # Orchestration                             │
-│  └── services/      # Persistence, deduplication                │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Topic | Documentation |
+|-------|---------------|
+| Scraper rules & patterns | [docs/scraper-guidelines.md](docs/scraper-guidelines.md) |
+| Frontend (React) | [docs/frontend.md](docs/frontend.md) |
+| Extractors overview | [docs/extractors/README.md](docs/extractors/README.md) |
+| Greenhouse extractor | [docs/extractors/greenhouse.md](docs/extractors/greenhouse.md) |
+| Lever extractor | [docs/extractors/lever.md](docs/extractors/lever.md) |
+| Ashby extractor | [docs/extractors/ashby.md](docs/extractors/ashby.md) |
+| Generic extractor | [docs/extractors/generic.md](docs/extractors/generic.md) |
 
-## Tech Stack
-
-### Frontend
-- **Framework**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS + shadcn/ui (new-york style)
-- **UI Components**: Radix UI primitives
-- **Charts**: Recharts
-- **Routing**: React Router v6
-- **Forms**: React Hook Form + Zod
-
-### Backend
-- **Database**: Supabase (PostgreSQL)
-- **Scraper**: Python 3.11+
-- **HTTP Client**: httpx (async)
-- **Browser Automation**: Playwright
-- **HTML Parsing**: selectolax
-- **CLI**: Typer + Rich
-
-## Project Structure
+## Architecture
 
 ```
-job_scraper/
+src/                    React dashboard (TypeScript)
+        ↓
+    Supabase            PostgreSQL + real-time
+        ↓
+jobscraper/             Python scraper (CLI)
+```
+
+## Project Layout
+
+```
 ├── src/                      # React frontend
-│   ├── components/
-│   │   ├── ui/               # shadcn/ui (don't modify)
-│   │   └── scraper/          # Dashboard components
-│   ├── lib/
-│   │   └── supabase.ts       # Supabase client
-│   └── types/
-│       └── supabase.ts       # Generated DB types
+│   ├── components/ui/        # shadcn/ui (don't modify)
+│   ├── components/scraper/   # Dashboard components
+│   └── lib/supabase.ts       # Supabase client
 │
-├── jobscraper/               # Python scraper package
-│   ├── cli.py                # CLI entry point
-│   ├── config.py             # Settings (pydantic-settings)
-│   ├── schemas.py            # Pydantic models
-│   ├── models.py             # SQLModel ORM models
-│   ├── extractors/           # ATS-specific extractors
-│   │   ├── greenhouse.py
-│   │   ├── lever.py
-│   │   ├── ashby.py
-│   │   └── generic_careers.py
-│   ├── collectors/           # Page fetchers
-│   │   ├── http_collector.py
-│   │   └── playwright_collector.py
+├── jobscraper/               # Python scraper
+│   ├── extractors/           # ATS parsers (greenhouse, lever, ashby, generic)
+│   ├── collectors/           # HTTP + Playwright fetchers
 │   ├── pipelines/            # Orchestration
-│   │   ├── discover.py       # Find new jobs
-│   │   ├── scrape_company.py # Single company
-│   │   └── scrape_all.py     # All companies
-│   ├── services/             # Business logic
-│   │   ├── persistence.py    # DB operations
-│   │   ├── dedupe.py         # Deduplication
-│   │   └── normalization.py  # Text normalization
-│   ├── parsers/              # Content parsing
-│   │   ├── sections.py       # Job description sections
-│   │   └── tools_skills.py   # Extract tools/skills
-│   └── utils/                # Helpers
-│       ├── hashing.py        # Content hashing
-│       ├── urls.py           # URL utilities
-│       └── text.py           # Text cleaning
+│   └── services/             # Persistence, deduplication
 │
+├── sources/companies.yaml    # Scraping targets
 ├── tests/                    # Python tests
-├── sources/                  # Company configs
-│   └── companies.yaml
-├── docs/                     # Documentation
-│   └── extractors/           # Extractor learnings
-└── data/                     # Local data (gitignored)
-    ├── raw/                  # Raw HTML cache
-    ├── exports/              # CSV/JSON exports
-    └── jobscraper.db         # SQLite database
+└── docs/                     # Detailed documentation
 ```
 
-## Development Commands
+## Essential Commands
 
 ### Frontend
 ```bash
-npm run dev          # Start dev server
-npm run build        # Type check + build
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
+npm run dev              # Dev server
+npm run build            # Production build
 ```
 
 ### Python Scraper
 ```bash
-# Install dependencies
-pip install -e ".[dev]"
-playwright install
+pip install -e ".[dev]"  # Install
+playwright install       # Browser setup
 
-# CLI commands
-python -m jobscraper.cli discover          # Discover jobs from all sources
-python -m jobscraper.cli scrape <company>  # Scrape specific company
-python -m jobscraper.cli export            # Export to CSV/JSON
-
-# Run tests
-pytest
-pytest tests/test_extractors.py -v
+python -m jobscraper.cli discover      # Run discovery
+python -m jobscraper.cli scrape <name> # Single company
+pytest                                  # Run tests
 ```
 
-## Key Types
+## Environment Setup
 
-### Frontend (TypeScript)
-- `Company` - Source configuration
-- `JobPosting` - Job listing data
-- `ScrapeLog` - Pipeline logs
-- `PipelineStats` - Dashboard stats
+Copy `.env.example` → `.env`:
+```
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_PROJECT_ID=xxx
+```
 
-### Backend (Python)
-- `JobPostingIn` - Input schema for job data
-- `JobPostingDB` - SQLModel for persistence
-- `CompanySource` - Company configuration
-- `ATSType` - Enum: greenhouse, lever, ashby, generic
-- `CollectorType` - Enum: http, playwright
+## Key Concepts
 
-## Extractor Architecture
+### Extractor Selection
+Greenhouse → Lever → Ashby → Generic (fallback)
 
-Each ATS extractor implements:
-1. `can_handle(url, html)` - Detect if page matches this ATS
-2. `extract_job_list(...)` - Parse job listings from careers page
-3. `extract_job_details(...)` - Parse full job description
+### Collector Choice
+- **HTTP**: Default, fast, static pages
+- **Playwright**: JavaScript-rendered, SPAs
 
-**Extractor selection order:**
-1. Greenhouse (boards.greenhouse.io)
-2. Lever (jobs.lever.co)
-3. Ashby (jobs.ashbyhq.com)
-4. Generic (fallback heuristics)
-
-See `docs/extractors/` for detailed patterns and learnings.
-
-## Design System (Frontend)
-
-- **Dark theme**: Background `#0F1117`, text `#F8F7F4`
-- **Font**: Monospace throughout
-- **Accent colors**: Amber (primary), Teal (success), Slate (borders)
-
-## Adding New Extractors
-
-1. Create `jobscraper/extractors/{ats_name}.py`
-2. Inherit from `BaseExtractor`
-3. Implement `can_handle`, `extract_job_list`, `extract_job_details`
-4. Register in `jobscraper/extractors/__init__.py`
-5. Add tests in `tests/test_extractors.py`
-6. Document patterns in `docs/extractors/{ats_name}.md`
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Supabase anon key
-- `SUPABASE_PROJECT_ID` - For type generation
-- `COMPANIES_YAML_PATH` - Path to company sources
+### Data Flow
+```
+Company YAML → Collector → Extractor → Normalizer → Deduplicator → DB
+```
 
 ## Path Aliases
 
-- `@/*` maps to `./src/*` (frontend)
+- `@/*` → `./src/*` (frontend)
+
+## When Adding Features
+
+| Task | Read First |
+|------|------------|
+| New extractor | [docs/extractors/README.md](docs/extractors/README.md), [docs/scraper-guidelines.md](docs/scraper-guidelines.md) |
+| Scraper changes | [docs/scraper-guidelines.md](docs/scraper-guidelines.md) |
+| Dashboard UI | [docs/frontend.md](docs/frontend.md) |
+| New company source | [docs/scraper-guidelines.md](docs/scraper-guidelines.md) → "Adding New Sources" |
