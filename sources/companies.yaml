@@ -1,0 +1,57 @@
+# Company Sources Configuration
+# Each entry defines a company's careers page to scrape
+
+companies:
+  - company_name: Stripe
+    careers_url: https://boards.greenhouse.io/stripe
+    source_type: greenhouse
+    use_browser: false
+    enabled: true
+
+  - company_name: Vercel
+    careers_url: https://vercel.com/careers
+    source_type: lever
+    use_browser: true
+    enabled: true
+
+  - company_name: Linear
+    careers_url: https://linear.app/careers
+    source_type: ashby
+    use_browser: false
+    enabled: true
+
+  - company_name: Figma
+    careers_url: https://boards.greenhouse.io/figma
+    source_type: greenhouse
+    use_browser: false
+    enabled: true
+
+  - company_name: Notion
+    careers_url: https://www.notion.so/careers
+    source_type: lever
+    use_browser: true
+    enabled: true
+
+  - company_name: Supabase
+    careers_url: https://boards.greenhouse.io/supabase
+    source_type: greenhouse
+    use_browser: false
+    enabled: true
+
+  - company_name: Loom
+    careers_url: https://www.loom.com/careers
+    source_type: ashby
+    use_browser: false
+    enabled: true
+
+  - company_name: PlanetScale
+    careers_url: https://jobs.lever.co/planetscale
+    source_type: lever
+    use_browser: false
+    enabled: true
+
+  - company_name: Acme Corp
+    careers_url: https://acmecorp.com/careers
+    source_type: generic
+    use_browser: true
+    enabled: false
